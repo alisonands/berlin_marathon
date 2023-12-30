@@ -229,12 +229,12 @@ def reactive_plot_2_2(selected_plot):
         return runners_count_plot
 
 
-# In[53]:
+# In[60]:
 
 
 template = pn.template.FastListTemplate(
-    title = 'Berlin Marathon runners',
-    sidebar = [pn.pane.Markdown("# Berlin Marathon!"),
+    title = 'An Analysis of the Berlin Maration dataset',
+    sidebar = [pn.pane.Markdown("This project takes the Berlin Marathon dataset and analyzes it look at how running times have changed over the years, and over different age groups and genders. It also takes a look into where the top runners are from."),
                pn.pane.Markdown("### What is the Berlin marathon? \n "
                                 " - The Berlin marathon is a global marathon held yearly in Berlin, Germany since 1974."
                                 "The dataset in used includes running times since the marathon's inception, "
