@@ -1,5 +1,5 @@
 # An Analysis of the Berlin Marathon Runners
-This dashboard can be accessed by running the folling in the terminal:
+This dashboard can be accessed by running the following in the terminal:
 ```
 panel serve running_final.py
 ```
