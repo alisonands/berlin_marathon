@@ -1,4 +1,6 @@
 # An Analysis of the Berlin Marathon Runners
+This dashboard can be accessed by running the folling in the terminal:
+`panel serve running_final.py`
 ![Dashboard](dashboard.png)
 - What is the Berlin marathon?
     - The Berlin marathon is a global marathon held yearly in Berlin, Germany since 1974. The dataset in used includes running times since the marathon's inception, and we delve into how some trends in running speeds have changed over time, and what factors play into lower running times.
