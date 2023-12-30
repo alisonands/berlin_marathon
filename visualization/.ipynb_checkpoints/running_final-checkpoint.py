@@ -2,16 +2,18 @@
 # coding: utf-8
 
 # # An Analysis of the Berlin Marathon Runners
-# - How have the average times changed over the years?
-# - How have the fastest times changed over the years?
+# - What is the Berlin marathon?
+#     - The Berlin marathon is a global marathon held yearly in Berlin, Germany since 1974. The dataset in used includes running times since the marathon's inception, and we delve into how some trends in running speeds have changed over time, and what factors play into lower running times.
+# - How have the average/fastest times changed over the years?
+#     - The top left graph shows that the average running times have increased over the years, likely due to an increase in the interest in the running community. The final running times, however, have decrease, given the increased number of challengers.
 # - How does age and gender affect running times
-#     - Finisher times over the years
-# - Where are most runners from?
-# - Where are the fastest runners from?
+#     - In the bottom left, we can see that women are overall slower than men by 30 minutes on average. In terms of age (the graph can be viewed in the dropdown), the peak running times occur around 30 years.
+# - Where are most runners from? Where are the fastest from. 
+#     - Given that this event takes place in Berlin, most runners are from Germany. The fastest runners are from Kenya, Ethiopia. As studies have now shown, this is due to strong genetics and high-altitude training.
 
 # This project takes the Berlin Marathon dataset and analyzes it look at how running times have changed over the years, and over different age groups and genders. It also takes a look into where the top runners are from.
 
-# In[1]:
+# In[11]:
 
 
 import pandas as pd
@@ -26,7 +28,7 @@ pn.extension('tabulator')
 import hvplot.pandas
 
 
-# In[18]:
+# In[12]:
 
 
 #format: year, country, gender, age, time
@@ -46,7 +48,7 @@ berlin_marathon.dropna(subset = 'time_hrs', how='any')
 berlin_marathon['age'] = pd.to_numeric(berlin_marathon['age'])
 
 
-# In[22]:
+# In[13]:
 
 
 year_slider = pn.widgets.IntSlider(name='Year slider', start=1974, end=2023, step=1, value=2023)
@@ -59,7 +61,7 @@ idf = berlin_marathon.interactive()
 # - How has the fastest time changed over the years?
 #     - Finishing times have decreased. obvs. because records are meant to be broken.
 
-# In[4]:
+# In[14]:
 
 
 overall_times = pd.DataFrame(berlin_marathon.groupby('year')['time_hrs'].mean().rename('Average Times'))#.hvplot(kind = 'scatter', title = 'Average times over the years')
@@ -70,43 +72,80 @@ overall_times_plot
 
 # ## Table df
 
-# In[5]:
+# In[15]:
 
 
-marathon_table = idf.drop(columns = ['time']).pipe(pn.widgets.Tabulator, pagination='remote', page_size = 10, sizing_mode='stretch_width') 
+# berlin_marathon.interactive()
+
+
+# In[27]:
+
+
+marathon_table = berlin_marathon.sort_values(by = 'time_hrs').drop(columns = ['time_hrs']).dropna(subset = 'country').interactive().reset_index()
+marathon_table = marathon_table.pipe(pn.widgets.Tabulator, page_size = 10, sizing_mode='stretch_width')
 marathon_table
 
 
 # ## How does gender affect running times?
 
-# In[20]:
+# In[17]:
 
 
 berlin_marathon.dtypes
 
 
-# In[58]:
+# In[18]:
 
 
 age_data_pipeline = (
-    idf[
-        age_ranges[age_selector.value][0] <= 
-        idf['age'] < 
-        age_ranges[age_selector.value][1]
-    ]
+    berlin_marathon
+    .sort_values(by = 'year', ascending = False)
     .groupby(['age'])['time_hrs'].mean()
-    .sort_values(ascending = False)
     .to_frame()
     .reset_index()
     .reset_index(drop=True)
 
 )
-age_data_plot = gender_data_pipeline.hvplot(
+age_data_plot = age_data_pipeline.hvplot(
     kind = 'scatter',
     title = 'Average time by age', 
     x = 'age',
     y = 'time_hrs')
 age_data_plot
+
+
+# ## How does gender affect times?
+
+# In[19]:
+
+
+gender_data = berlin_marathon[(berlin_marathon['gender'] != 'X') & (berlin_marathon['gender'] != '–') ]
+gender_data_pipeline = (
+    gender_data
+    .sort_values(by = 'year')
+    .groupby(['gender', 'year'])['time_hrs'].mean()
+    .to_frame()
+    .reset_index()
+    .reset_index(drop=True)
+
+)
+gender_data_plot = gender_data_pipeline.hvplot(
+    kind = 'scatter',
+    by = 'gender',
+    title = 'Average time by gender', 
+    x = 'year',
+    y = 'time_hrs')
+gender_data_plot
+
+
+# ### What are the average time differences
+
+# In[20]:
+
+
+time_diff = idf[(idf['gender'] != 'X') & (idf['gender'] != '–') ]
+time_diff = time_diff.groupby('gender')['time_hrs'].mean().reset_index()
+time_diff.iloc[0,1]-time_diff.iloc[1,1]
 
 
 # ## Where are most runners from?
@@ -117,7 +156,7 @@ age_data_plot
 # - Are these two places the same?
 #     - no. no they are not.
 
-# In[7]:
+# In[21]:
 
 
 runners_count = berlin_marathon.groupby(['country', 'gender']).size().sort_values(ascending = False)
@@ -131,14 +170,14 @@ runners_count_plot
 
 # ## Where are the top 50 runners from?
 
-# In[8]:
+# In[22]:
 
 
 gender_selector = pn.widgets.Select(options=['All', 'male', 'female'], value='Men', name='Select Gender')
 gender_selector
 
 
-# In[9]:
+# In[23]:
 
 
 gender_selector = pn.widgets.Select(options=['male', 'female'], value='Men', name='Select Gender')
@@ -159,6 +198,7 @@ top_50_plot = top_50_pipeline.hvplot(kind = 'bar',
                        stacked = True, 
                        rot = 45,
                        title = 'Where are the top 50 runners from?')
+top_50_plot
 
 berlin_marathon = berlin_marathon.dropna(subset=['country', 'gender']).sort_values(by = 'time_hrs')
 berlin_marathon_ = berlin_marathon[:50].groupby(['country', 'gender']).size().sort_values(ascending = False)#.unstack(fill_value = 0)
@@ -168,34 +208,55 @@ berlin_marathon_plot = berlin_marathon_.hvplot(kind = 'bar',
                                                title = 'Where are the top 50 runners from?')
 berlin_marathon_plot
 
-# In[10]:
+# In[24]:
 
 
-plot_selector = pn.widgets.Select(options=['Top 50', 'Runner Population'], name='Select Plot')
-@pn.depends(plot_selector.param.value)
-def reactive_plot(selected_plot):
+plot_selector_2_1 = pn.widgets.Select(options=['Average time by gender', 'Average time by age'], name='Select Plot')
+@pn.depends(plot_selector_2_1.param.value)
+def reactive_plot_2_1(selected_plot):
+    
+    if selected_plot == 'Average time by gender':
+        return gender_data_plot
+    elif selected_plot == 'Average time by age':
+        return age_data_plot
+
+plot_selector_2_2 = pn.widgets.Select(options=['Top 50', 'Runner Population'], name='Select Plot')
+@pn.depends(plot_selector_2_2.param.value)
+def reactive_plot_2_2(selected_plot):
     if selected_plot == 'Top 50':
         return top_50_plot
     elif selected_plot == 'Runner Population':
         return runners_count_plot
 
 
-# In[59]:
+# In[53]:
 
 
 template = pn.template.FastListTemplate(
     title = 'Berlin Marathon runners',
     sidebar = [pn.pane.Markdown("# Berlin Marathon!"),
-               [pn.pane.Markdown("#### ")],
-               year_slider
+               pn.pane.Markdown("### What is the Berlin marathon? \n "
+                                " - The Berlin marathon is a global marathon held yearly in Berlin, Germany since 1974."
+                                "The dataset in used includes running times since the marathon's inception, "
+                                "and we delve into how some trends in running speeds have changed over time, "
+                                "and what factors play into lower running times."),
+               pn.pane.Markdown("### How have the average and fastest times changed over the years? \n"
+                               " - The top left shows a comparison of the average and the fastest times, which have increased"
+                               "over the years. This is likely due to an increase in the interest in the running community. "
+                               "The final running times, however, have decreased, given the increased number of challengers. "),
+               pn.pane.Markdown("### How does age and gender affect running times? \n"
+                               " - In the bottom left, we can see that women are overall slower than men by 30 minutes on "
+                               "average. In terms of age (the graph can be viewed in the dropdown), the peak running times "
+                               "occur around 30 years."),
+               pn.pane.Markdown("### Where are most runners from? \n"
+                               " - Given that this event takes place in Berlin, most runners are from Germany. The fastest"
+                               "runners are from Kenya and Ethiopia. As studies have now shown, this is due to strong genetics and "
+                               "high-altitude training.")
               ],
     main = [pn.Row(pn.Column(overall_times_plot), pn.Column(marathon_table)),#, top_50_plot)),
-           pn.Row(pn.Column(age_data_plot), pn.Column(plot_selector, reactive_plot))]
-)
-template.servable();
-
-
-# In[12]:
+           pn.Row(pn.Column(plot_selector_2_1, reactive_plot_2_1), pn.Column(plot_selector_2_2, reactive_plot_2_2))
+           ])
+template.servable()
 
 
 # In[ ]:
