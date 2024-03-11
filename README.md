@@ -12,3 +12,6 @@ panel serve running_final.py
     - In the bottom left, we can see that women are overall slower than men by 30 minutes on average. In terms of age (the graph can be viewed in the dropdown), the peak running times occur around 30 years.
 - Where are most runners from? Where are the fastest from. 
     - Given that this event takes place in Berlin, most runners are from Germany. The fastest runners are from Kenya, Ethiopia. As studies have now shown, this is due to strong genetics and high-altitude training.
+
+
+[Dataset Source](https://www.kaggle.com/datasets/aiaiaidavid/berlin-marathons-data)
